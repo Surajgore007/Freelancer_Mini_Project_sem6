@@ -9,6 +9,7 @@
     "clean": "hardhat clean",
     "deploy:local": "node scripts/deploy.js",
     "deploy:public": "node scripts/deploy-public.js",
+    "bootstrap:arbiters": "node scripts/bootstrap-arbiters.js",
     "frontend:build": "npm --prefix frontend run build",
     "frontend:install": "npm --prefix frontend install",
     "test": "echo \"Add scenario tests for the new escrow hub before relying on this in production.\" && exit 1"
