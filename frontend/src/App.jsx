@@ -487,8 +487,8 @@ function App() {
       {actionError ? <Banner tone="danger">{actionError}</Banner> : null}
       {!deploymentReady ? (
         <Banner tone="warning">
-          Frontend deployment config is empty. Compile and deploy the contract, then run `node scripts/deploy.js`
-          so `frontend/src/config/deployment.json` gets filled.
+          Frontend contract config is missing. Set `VITE_CONTRACT_ADDRESS`, `VITE_CHAIN_ID`, and
+          `VITE_NETWORK_NAME`, or run `npm run deploy:local` to generate `frontend/.env.local`.
         </Banner>
       ) : null}
       {account && wrongNetwork ? (

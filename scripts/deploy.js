@@ -1,5 +1,5 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { ContractFactory, JsonRpcProvider, parseEther } from "ethers";
 
 async function waitFor(txPromise) {
@@ -186,37 +186,18 @@ async function main() {
   await waitFor(contract.connect(actors.freelancerZane).acceptJob(job6, { value: parseEther("0.05") }));
   await waitFor(contract.connect(actors.freelancerZane).submitWork(job6, "https://demo.escrow/work/checkout-audit-report"));
 
-  const frontendConfigPath = resolve("frontend/src/config/deployment.json");
-  await mkdir(dirname(frontendConfigPath), { recursive: true });
-  await writeFile(
-    frontendConfigPath,
-    JSON.stringify(
-      {
-        address: await contract.getAddress(),
-        chainId: 31337,
-        networkName: "Hardhat localhost",
-        abi: artifact.abi,
-        demoAccounts: [
-          { key: "clientAtlas", label: "Atlas Studio", role: "client", address: addresses.clientAtlas },
-          { key: "freelancerMaya", label: "Maya Chen", role: "freelancer", address: addresses.freelancerMaya },
-          { key: "clientNova", label: "Nova Labs", role: "client", address: addresses.clientNova },
-          { key: "freelancerLeo", label: "Leo Ortiz", role: "freelancer", address: addresses.freelancerLeo },
-          { key: "bootstrapAva", label: "Ava Review Guild", role: "bootstrap-arbiter", address: addresses.bootstrapAva },
-          { key: "bootstrapIris", label: "Iris Review Guild", role: "bootstrap-arbiter", address: addresses.bootstrapIris },
-          { key: "bootstrapRhett", label: "Rhett Review Guild", role: "bootstrap-arbiter", address: addresses.bootstrapRhett },
-          { key: "clientOrbit", label: "Orbit Commerce", role: "client", address: addresses.clientOrbit },
-          { key: "freelancerZane", label: "Zane Parker", role: "freelancer", address: addresses.freelancerZane },
-        ],
-        seededJobs: [job1, job2, job3, job4, job5, job6],
-      },
-      null,
-      2,
-    ),
-    "utf8",
-  );
+  const frontendEnvPath = resolve("frontend/.env.local");
+  const frontendEnv = [
+    `VITE_CONTRACT_ADDRESS=${await contract.getAddress()}`,
+    "VITE_CHAIN_ID=31337",
+    "VITE_NETWORK_NAME=Hardhat localhost",
+    "",
+  ].join("\n");
+
+  await writeFile(frontendEnvPath, frontendEnv, "utf8");
 
   console.log("FreelancerEscrow deployed to:", await contract.getAddress());
-  console.log("frontend config written to:", frontendConfigPath);
+  console.log("frontend env written to:", frontendEnvPath);
   console.log("Seeded jobs:", job1, job2, job3, job4, job5, job6);
 }
 

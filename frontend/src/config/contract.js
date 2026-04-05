@@ -1,11 +1,34 @@
-import deployment from "./deployment.json";
+import abi from "./abi.json";
+import { LOCAL_DEMO_ACCOUNTS, LOCAL_SEEDED_JOBS } from "./demoData";
 
-export const CONTRACT_ADDRESS = deployment.address || "";
-export const CONTRACT_ABI = deployment.abi || [];
-export const EXPECTED_CHAIN_ID = deployment.chainId || 31337;
-export const EXPECTED_NETWORK_NAME = deployment.networkName || "Hardhat localhost";
-export const DEMO_ACCOUNTS = deployment.demoAccounts || [];
-export const SEEDED_JOBS = deployment.seededJobs || [];
+function parseIntegerEnv(value, fallback) {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+function parseJsonEnv(value, fallback) {
+  if (!value) return fallback;
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "").trim();
+export const CONTRACT_ABI = abi;
+export const EXPECTED_CHAIN_ID = parseIntegerEnv(import.meta.env.VITE_CHAIN_ID, 31337);
+export const EXPECTED_NETWORK_NAME =
+  (import.meta.env.VITE_NETWORK_NAME || "").trim() ||
+  (EXPECTED_CHAIN_ID === 31337 ? "Hardhat localhost" : "Configured network");
+
+const defaultDemoAccounts = EXPECTED_CHAIN_ID === 31337 ? LOCAL_DEMO_ACCOUNTS : [];
+const defaultSeededJobs = EXPECTED_CHAIN_ID === 31337 ? LOCAL_SEEDED_JOBS : [];
+
+export const DEMO_ACCOUNTS = parseJsonEnv(import.meta.env.VITE_DEMO_ACCOUNTS_JSON, defaultDemoAccounts);
+export const SEEDED_JOBS = parseJsonEnv(import.meta.env.VITE_SEEDED_JOBS_JSON, defaultSeededJobs);
 
 export const JOB_STATUS = [
   "Unknown",
@@ -41,7 +64,7 @@ export function formatEth(value, ethersLib) {
 }
 
 export function formatDateTime(timestamp) {
-  if (!timestamp) return "—";
+  if (!timestamp) return "-";
   return new Date(timestamp * 1000).toLocaleString();
 }
 
@@ -56,7 +79,7 @@ export function formatCountdown(seconds) {
 }
 
 export function shortenAddress(address) {
-  if (!address) return "—";
+  if (!address) return "-";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
